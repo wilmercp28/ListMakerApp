@@ -1,6 +1,7 @@
 package listmakerapp.main.data
 
-import androidx.compose.runtime.MutableState
+
+
 
 
 data class ListOfItems(
@@ -8,10 +9,8 @@ data class ListOfItems(
     val items: List<Item>
 )
 
-
-
 data class Item(
     val unit: String,
     val quantity: String,
-    val description: String,
+    val description: String
 )

@@ -1,34 +1,19 @@
 package listmakerapp.main
 
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import listmakerapp.main.data.Item
 import listmakerapp.main.data.ListOfItems
 
-class ViewModel : ViewModel() {
-    private val _list = MutableLiveData<List<ListOfItems>>()
-    val list: LiveData<List<ListOfItems>> get() = _list
+class ListViewModel : ViewModel() {
+    private val _list = mutableListOf(ListOfItems(name = "hola", items = emptyList()))
+    val list: MutableList<ListOfItems> = _list
 
-    init {
-        _list.value = mutableListOf(
-            ListOfItems(
-                "Test",
-                listOf(
-                    Item("Unit", "1", "Hola"),
-                    Item("Unit", "1", "Hola"),
-                    Item("Unit", "1", "Hola"),
-                    Item("Unit", "1", "Hola"),
-                    Item("Unit", "1", "Hola"),
-                    Item("Unit", "1", "Hola")
-                )
-            )
-        )
-    }
-    fun updateName(index: Int, newName: String) {
-        val currentList = _list.value.orEmpty().toMutableList()
-        currentList[index].name = newName
-        _list.value = currentList
+    fun changeName(newName: String) {
+        list[0].name = newName
     }
 }
