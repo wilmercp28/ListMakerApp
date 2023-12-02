@@ -46,18 +46,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import listmakerapp.main.data.ListOfItems
-import listmakerapp.main.viewmodel.DataRepository
 import listmakerapp.main.viewmodel.ListViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun HomeScreen(navHost: NavHostController, listViewModel: ListViewModel, selectedIndex: MutableIntState) {
-
+fun HomeScreen(navHost: NavHostController, listViewModel: ListViewModel) {
 
     var selectedList by remember { mutableStateOf<ListOfItems?>(null) }
     val listState by listViewModel.list.collectAsState()
-
 
     Scaffold(
         topBar = {
@@ -105,7 +102,7 @@ fun HomeScreen(navHost: NavHostController, listViewModel: ListViewModel, selecte
                                 listViewModel.removeList(list)
                             },
                             onEdit = {
-                                selectedIndex.intValue = listState.indexOf(it)
+                                listViewModel.changeSelectedIndex(listState.indexOf(it))
                                 navHost.navigate("EDIT")
 
                             }
@@ -129,7 +126,7 @@ fun ShowList(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onToggle(list) }
-            .height(100.dp)
+            .height(130.dp)
             .padding(10.dp)
             .background(
                 MaterialTheme.colorScheme.primary,
@@ -139,6 +136,7 @@ fun ShowList(
         verticalArrangement = Arrangement.Center
     ) {
         Text(text = list.name, fontSize = 30.sp, color = MaterialTheme.colorScheme.onPrimary)
+        Text(text = list.items.size.toString(), fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimary)
 
         AnimatedVisibility(
             visible = expanded,

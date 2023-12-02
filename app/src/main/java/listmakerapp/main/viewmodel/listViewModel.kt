@@ -2,7 +2,6 @@ package listmakerapp.main.viewmodel
 
 
 import android.util.Log
-import androidx.compose.runtime.MutableIntState
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,34 +9,57 @@ import listmakerapp.main.data.Item
 import listmakerapp.main.data.ListOfItems
 
 
-
-
 open class ListViewModel(
 ) : ViewModel() {
 
 
+    private val _selectedIndex = MutableStateFlow(0)
     private val _loadingState = MutableStateFlow(true)
     private val _list = MutableStateFlow(listOf<ListOfItems>())
     val list = _list.asStateFlow()
+    val loadingState = _loadingState.asStateFlow()
+    val selectedIndex = _selectedIndex.asStateFlow()
 
 
+    fun changeSelectedIndex(
+        index: Int
+    ) {
+        _selectedIndex.value = index
+    }
 
-
-    fun addItem(selectedIndex: MutableIntState) {
+    fun changeItem(
+        item: Item,
+        newItem: Item
+    ) {
+        val index = _list.value[_selectedIndex.value].items.indexOf(item)
         val mutableList = _list.value.toMutableList()
-        val mutableItems = mutableList[selectedIndex.intValue].items.toMutableList()
-        mutableItems += Item(unit = "Unit", quantity = "0", description = "")
-        mutableList[selectedIndex.intValue] = mutableList[selectedIndex.intValue].copy(items = mutableItems)
+        val mutableItems = mutableList[_selectedIndex.value].items.toMutableList()
+        mutableItems[index] = newItem
+        mutableList[_selectedIndex.value] = mutableList[_selectedIndex.value].copy(
+            items = mutableItems
+        )
+        _list.value = mutableList
+
+    }
+
+    fun addItem() {
+        val mutableList = _list.value.toMutableList()
+        val mutableItems = mutableList[_selectedIndex.value].items.toMutableList()
+        mutableItems += Item(unit = "Unit", quantity = "", description = "")
+        mutableList[_selectedIndex.value] =
+            mutableList[_selectedIndex.value].copy(items = mutableItems)
         _list.value = mutableList
     }
+
     fun removeItem(
-        selectedIndex: MutableIntState,
+        selectedIndex: Int,
         item: Item
-    ){
+    ) {
         val mutableList = _list.value.toMutableList()
-        val mutableItems = mutableList[selectedIndex.intValue].items.toMutableList()
+        val mutableItems = mutableList[selectedIndex].items.toMutableList()
         mutableItems -= item
-        mutableList[selectedIndex.intValue] = mutableList[selectedIndex.intValue].copy(items = mutableItems)
+        mutableList[selectedIndex] =
+            mutableList[selectedIndex].copy(items = mutableItems)
         _list.value = mutableList
 
     }
@@ -45,6 +67,7 @@ open class ListViewModel(
     fun changeLoadingState() {
         _loadingState.value = false
     }
+
     fun updateList(list: List<ListOfItems>?) {
         if (!list.isNullOrEmpty()) {
             _list.value = list

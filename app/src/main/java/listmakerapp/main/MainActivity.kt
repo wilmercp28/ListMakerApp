@@ -1,5 +1,6 @@
 package listmakerapp.main
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -17,6 +18,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.intl.Locale
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -36,13 +39,10 @@ import listmakerapp.main.viewmodel.ListViewModel
 
 class MainActivity : ComponentActivity() {
 
-    private val dataStore: DataStore<Preferences> by preferencesDataStore(name = "AppState")
     private val listViewModel: ListViewModel by viewModels()
-
-
+    private val dataStore: DataStore<Preferences> by preferencesDataStore(name = "AppState")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
 
         lifecycleScope.launch {
             val appData = getAppData(dataStore).first()
@@ -50,10 +50,8 @@ class MainActivity : ComponentActivity() {
             listViewModel.changeLoadingState()
         }
 
-
         setContent {
             val navController = rememberNavController()
-            val selectedIndex = remember { mutableIntStateOf(0) }
             ListMakerAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -61,23 +59,17 @@ class MainActivity : ComponentActivity() {
                 ) {
                     NavHost(navController, startDestination = "HOME") {
                         composable("HOME") {
-                            HomeScreen(navController, listViewModel, selectedIndex)
+                            HomeScreen(navController, listViewModel)
                         }
                         composable("EDIT") {
-                            ListEditing(navController, listViewModel, selectedIndex)
+                            ListEditing(navController, listViewModel)
                         }
                     }
                 }
             }
         }
-
-        onBackPressedDispatcher.addCallback(this) {
-            lifecycleScope.launch {
-                Log.d("Saved onCallBack", "Save")
-                saveDataAndFinish()
-            }
-        }
     }
+
     override fun onStop() {
         super.onStop()
         lifecycleScope.launch {
