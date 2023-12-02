@@ -1,6 +1,8 @@
 package listmakerapp.main.viewmodel
 
-class DataRepository {
+import androidx.lifecycle.ViewModel
+
+class DataRepository : ListViewModel(){
 
 
 

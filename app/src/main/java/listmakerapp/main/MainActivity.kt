@@ -3,13 +3,19 @@ package listmakerapp.main
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -29,6 +35,7 @@ import listmakerapp.main.ui.theme.ListMakerAppTheme
 import listmakerapp.main.viewmodel.ListViewModel
 
 class MainActivity : ComponentActivity() {
+
     private val dataStore: DataStore<Preferences> by preferencesDataStore(name = "AppState")
     private val listViewModel: ListViewModel by viewModels()
 
@@ -36,10 +43,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
         lifecycleScope.launch {
             val appData = getAppData(dataStore).first()
             listViewModel.updateList(appData.list)
+            listViewModel.changeLoadingState()
         }
+
+
         setContent {
             val navController = rememberNavController()
             val selectedIndex = remember { mutableIntStateOf(0) }
@@ -50,26 +61,40 @@ class MainActivity : ComponentActivity() {
                 ) {
                     NavHost(navController, startDestination = "HOME") {
                         composable("HOME") {
-                            HomeScreen(navController,listViewModel, selectedIndex)
+                            HomeScreen(navController, listViewModel, selectedIndex)
                         }
-                        composable("EDIT"){
-                            ListEditing(navController,listViewModel,selectedIndex)
+                        composable("EDIT") {
+                            ListEditing(navController, listViewModel, selectedIndex)
                         }
                     }
                 }
             }
         }
-    }
 
-    override fun onPause() {
-        super.onPause()
-        lifecycleScope.launch {
-            val appState = AppData(
-                list = listViewModel.list.value
-            )
-            saveAppData(appState, dataStore)
-            Log.d("Saved", "Save")
+        onBackPressedDispatcher.addCallback(this) {
+            lifecycleScope.launch {
+                Log.d("Saved onCallBack", "Save")
+                saveDataAndFinish()
+            }
         }
     }
+    override fun onStop() {
+        super.onStop()
+        lifecycleScope.launch {
+            saveDataAndFinish()
+            Log.d("Saved onPause", "Save")
+        }
+    }
+
+    private suspend fun saveDataAndFinish() {
+        val appState = AppData(
+            list = listViewModel.list.value
+        )
+        saveAppData(appState, dataStore)
+        Log.d("Saved", "Data saved before finish")
+        finish()
+    }
+
+
 }
 

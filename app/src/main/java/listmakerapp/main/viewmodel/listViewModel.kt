@@ -2,12 +2,17 @@ package listmakerapp.main.viewmodel
 
 
 import android.util.Log
+import androidx.compose.runtime.MutableIntState
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import listmakerapp.main.data.Item
 import listmakerapp.main.data.ListOfItems
 
-class ListViewModel(
+
+
+
+open class ListViewModel(
 ) : ViewModel() {
 
 
@@ -16,6 +21,30 @@ class ListViewModel(
     val list = _list.asStateFlow()
 
 
+
+
+    fun addItem(selectedIndex: MutableIntState) {
+        val mutableList = _list.value.toMutableList()
+        val mutableItems = mutableList[selectedIndex.intValue].items.toMutableList()
+        mutableItems += Item(unit = "Unit", quantity = "0", description = "")
+        mutableList[selectedIndex.intValue] = mutableList[selectedIndex.intValue].copy(items = mutableItems)
+        _list.value = mutableList
+    }
+    fun removeItem(
+        selectedIndex: MutableIntState,
+        item: Item
+    ){
+        val mutableList = _list.value.toMutableList()
+        val mutableItems = mutableList[selectedIndex.intValue].items.toMutableList()
+        mutableItems -= item
+        mutableList[selectedIndex.intValue] = mutableList[selectedIndex.intValue].copy(items = mutableItems)
+        _list.value = mutableList
+
+    }
+
+    fun changeLoadingState() {
+        _loadingState.value = false
+    }
     fun updateList(list: List<ListOfItems>?) {
         if (!list.isNullOrEmpty()) {
             _list.value = list
@@ -50,7 +79,6 @@ class ListViewModel(
     ) {
         var listNumber = 1
         var name = "New List $listNumber"
-
         while (nameAlreadyExist(name)) {
             listNumber++
             name = "New List $listNumber"

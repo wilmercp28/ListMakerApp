@@ -46,14 +46,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import listmakerapp.main.data.ListOfItems
+import listmakerapp.main.viewmodel.DataRepository
 import listmakerapp.main.viewmodel.ListViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(navHost: NavHostController, listViewModel: ListViewModel, selectedIndex: MutableIntState) {
+
+
     var selectedList by remember { mutableStateOf<ListOfItems?>(null) }
     val listState by listViewModel.list.collectAsState()
+
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -66,7 +71,9 @@ fun HomeScreen(navHost: NavHostController, listViewModel: ListViewModel, selecte
             )
         },
         floatingActionButton = {
-            SmallFloatingActionButton(onClick = { listViewModel.addNewList() }) {
+            SmallFloatingActionButton(onClick = {
+                listViewModel.addNewList()
+            }) {
                 Icon(Icons.Default.Add, contentDescription = "Add New List")
             }
         }
