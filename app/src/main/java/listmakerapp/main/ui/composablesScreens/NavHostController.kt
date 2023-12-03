@@ -29,7 +29,10 @@ fun NavHostController(
             if (!shareViewModel.loadingAppState.collectAsState().value) navController.navigate("HOME")
         }
         composable("HOME") {
-            Box(modifier = Modifier.padding(10.dp)) { HomeScreen() }
+            Box(modifier = Modifier.padding(10.dp)) { HomeScreen(navController) }
+        }
+        composable("EDIT-MODE") {
+            Box(modifier = Modifier.padding(10.dp)) { EditModeScreen(navController) }
         }
     }
 }

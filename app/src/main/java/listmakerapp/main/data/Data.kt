@@ -1,6 +1,6 @@
 package listmakerapp.main.data
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 
@@ -13,7 +13,7 @@ data class ListOfItems(
     val id: String = UUID.randomUUID().toString(),
     var name: String,
     var items: List<Item>,
-    val dateOfCreation: LocalDate
+    val dateOfCreation: LocalDateTime
 )
 
 

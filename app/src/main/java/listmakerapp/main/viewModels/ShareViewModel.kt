@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import listmakerapp.main.data.ListOfItems
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 class ShareViewModel : ViewModel() {
 
@@ -13,12 +13,14 @@ class ShareViewModel : ViewModel() {
     private val _selectedIndex = MutableStateFlow(0)
     private val _isShoppingMode = MutableStateFlow(false)
     private val _loadingAppState = MutableStateFlow(true)
+    private val _isEditMode = MutableStateFlow(false)
 
 
     val listState: StateFlow<List<ListOfItems>> get() = _list
     val selectedIndex: StateFlow<Int> get() = _selectedIndex
     val isShoppingMode: StateFlow<Boolean> get() = _isShoppingMode
     val loadingAppState: StateFlow<Boolean> get() = _loadingAppState
+    val editMode: StateFlow<Boolean> get() = _isEditMode
 
 
     //State Changing Functions
@@ -30,6 +32,14 @@ class ShareViewModel : ViewModel() {
         _isShoppingMode.value = !_isShoppingMode.value
     }
 
+    fun changeEditMode() {
+        _isEditMode.value = !_isEditMode.value
+    }
+
+    fun changeSelectedIndex(index: Int){
+        _selectedIndex.value = index
+    }
+
 
     //Changing List
     fun addNewList() {
@@ -37,10 +47,14 @@ class ShareViewModel : ViewModel() {
         mutableList += ListOfItems(
             name = "New List",
             items = emptyList(),
-            dateOfCreation = LocalDate.now()
+            dateOfCreation = LocalDateTime.now()
         )
         _list.value = mutableList
     }
 
-
+    fun removeList(listItem: ListOfItems) {
+        val mutableList = _list.value.toMutableList()
+        mutableList -= listItem
+        _list.value = mutableList
+    }
 }
