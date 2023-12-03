@@ -15,7 +15,7 @@ val APP_DATA_STORE_KEY = stringPreferencesKey("list_name")
 fun getAppData(dataStore: DataStore<Preferences>): Flow<AppData> {
     return dataStore.data.map { preferences ->
         val appDataJson = preferences[APP_DATA_STORE_KEY] ?: "{}"
-        Gson().fromJson(appDataJson, AppData::class.java) ?: AppData(emptyList())
+        Gson().fromJson(appDataJson, AppData::class.java) ?: AppData(list =  emptyList(), selectedIndex = 0, isShoppingMode = false)
     }
 }
 

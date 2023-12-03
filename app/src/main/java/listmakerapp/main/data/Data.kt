@@ -1,18 +1,19 @@
 package listmakerapp.main.data
 
-import java.util.Date
+import java.time.LocalDate
 import java.util.UUID
 
 
 data class AppData(
     val list: List<ListOfItems>,
     val selectedIndex: Int,
-    val isShoppingMode: Int
+    val isShoppingMode: Boolean
 )
 data class ListOfItems(
+    val id: String = UUID.randomUUID().toString(),
     var name: String,
     var items: List<Item>,
-    val dateOfCreation: Date
+    val dateOfCreation: LocalDate
 )
 
 
