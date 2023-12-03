@@ -25,3 +25,5 @@ suspend fun saveAppData(appData: AppData, dataStore: DataStore<Preferences>) {
         preferences[APP_DATA_STORE_KEY] = appDataJson
     }
 }
+
+
