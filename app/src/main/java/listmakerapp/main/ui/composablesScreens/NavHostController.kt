@@ -5,10 +5,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -25,14 +23,18 @@ fun NavHostController(
             enterTransition = { fadeIn() },
             exitTransition = { fadeOut() }
         ) {
-            LoadingScreen()
-            if (!shareViewModel.loadingAppState.collectAsState().value) navController.navigate("HOME")
+            LoadingScreen(navController,shareViewModel)
         }
         composable("HOME") {
-            Box(modifier = Modifier.padding(10.dp)) { HomeScreen(navController,shareViewModel) }
+            Box(modifier = Modifier.padding(10.dp)) { HomeScreen(navController, shareViewModel) }
         }
         composable("EDIT-MODE") {
-            Box(modifier = Modifier.padding(10.dp)) { EditModeScreen(navController,shareViewModel) }
+            Box(modifier = Modifier.padding(10.dp)) {
+                EditModeScreen(
+                    navController,
+                    shareViewModel
+                )
+            }
         }
     }
 }

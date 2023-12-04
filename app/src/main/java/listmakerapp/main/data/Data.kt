@@ -4,7 +4,7 @@ import java.util.UUID
 
 
 data class AppData(
-    val list: List<ListOfItems>,
+    val list: List<ListOfItems>?,
     val selectedIndex: Int,
     val isShoppingMode: Boolean
 )

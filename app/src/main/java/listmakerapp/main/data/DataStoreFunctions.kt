@@ -11,11 +11,14 @@ import kotlinx.coroutines.flow.map
 val APP_DATA_STORE_KEY = stringPreferencesKey("APP-State")
 
 
-
 fun getAppData(dataStore: DataStore<Preferences>): Flow<AppData?> {
     return dataStore.data.map { preferences ->
         val appDataJson = preferences[APP_DATA_STORE_KEY] ?: "{}"
-        Gson().fromJson(appDataJson, AppData::class.java)
+        Gson().fromJson(appDataJson, AppData::class.java) ?: AppData(
+            list = emptyList(),
+            selectedIndex = 0,
+            isShoppingMode = false
+        )
     }
 }
 

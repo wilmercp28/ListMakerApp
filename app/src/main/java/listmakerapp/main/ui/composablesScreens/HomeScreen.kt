@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -61,7 +63,7 @@ fun HomeScreen(
     shareViewModel: ShareViewModel
 ) {
     val list by shareViewModel.listState.collectAsState()
-    var selectedList by rememberSaveable { mutableStateOf<ListOfItems?>(null) }
+    var selectedList by remember { mutableStateOf<ListOfItems?>(null) }
     val lazyColumnState = rememberLazyListState()
     val coroutine = rememberCoroutineScope()
 
@@ -102,7 +104,7 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             contentPadding = PaddingValues(5.dp),
             content = {
-                if (!list.isNullOrEmpty()) {
+                if (list.isNotEmpty()) {
                     items(list.reversed(), key = { it.id }) { listItem ->
                         Box(
                             modifier = Modifier
@@ -140,7 +142,7 @@ fun ShowList(
     onEditMode: () -> Unit,
     onShoppingMode: () -> Unit
 ) {
-    var showRemoveAlert by rememberSaveable { mutableStateOf(false) }
+    var showRemoveAlert by remember { mutableStateOf(false) }
     if (showRemoveAlert) {
         val title = "Are you sure you want to delete ${listItem.name}?"
         RemoveConfirmationAlert(
@@ -220,6 +222,9 @@ fun ShowList(
                         contentDescription = "Remove List",
                         tint = Color.Red
                     )
+                }
+                IconButton(onClick = { onEditMode() }) {
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit List")
                 }
 
             }

@@ -1,5 +1,6 @@
 package listmakerapp.main.viewModels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,20 +27,24 @@ class ShareViewModel : ViewModel() {
 
     //State Changing Functions
     fun loadStates(appData: AppData) {
-        _list.value = appData.list
+        _list.value = appData.list ?: emptyList()
         _selectedIndex.value = appData.selectedIndex
         _isShoppingMode.value = appData.isShoppingMode
     }
+
     fun changeLoadingState() {
         _loadingAppState.value = !_loadingAppState.value
     }
+
     fun changeShoppingMode() {
         _isShoppingMode.value = !_isShoppingMode.value
     }
+
     fun changeEditMode() {
         _isEditMode.value = !_isEditMode.value
     }
-    fun changeSelectedIndex(index: Int){
+
+    fun changeSelectedIndex(index: Int) {
         _selectedIndex.value = index
     }
 
@@ -47,6 +52,7 @@ class ShareViewModel : ViewModel() {
     //Changing List
     fun addNewList() {
         val mutableList = _list.value.toMutableList()
+        Log.d("Newlist", mutableList.toString())
         mutableList += ListOfItems(
             name = "New List",
             items = emptyList(),
@@ -58,6 +64,12 @@ class ShareViewModel : ViewModel() {
     fun removeList(listItem: ListOfItems) {
         val mutableList = _list.value.toMutableList()
         mutableList -= listItem
+        _list.value = mutableList
+    }
+
+    fun changeListName(newName: String) {
+        val mutableList = _list.value.toMutableList()
+        mutableList[_selectedIndex.value].name = newName
         _list.value = mutableList
     }
 }
