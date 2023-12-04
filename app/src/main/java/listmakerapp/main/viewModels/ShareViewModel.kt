@@ -3,6 +3,7 @@ package listmakerapp.main.viewModels
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import listmakerapp.main.data.AppData
 import listmakerapp.main.data.ListOfItems
 import java.time.LocalDateTime
 
@@ -24,18 +25,20 @@ class ShareViewModel : ViewModel() {
 
 
     //State Changing Functions
+    fun loadStates(appData: AppData) {
+        _list.value = appData.list
+        _selectedIndex.value = appData.selectedIndex
+        _isShoppingMode.value = appData.isShoppingMode
+    }
     fun changeLoadingState() {
         _loadingAppState.value = !_loadingAppState.value
     }
-
     fun changeShoppingMode() {
         _isShoppingMode.value = !_isShoppingMode.value
     }
-
     fun changeEditMode() {
         _isEditMode.value = !_isEditMode.value
     }
-
     fun changeSelectedIndex(index: Int){
         _selectedIndex.value = index
     }
@@ -47,7 +50,7 @@ class ShareViewModel : ViewModel() {
         mutableList += ListOfItems(
             name = "New List",
             items = emptyList(),
-            dateOfCreation = LocalDateTime.now()
+            dateOfCreation = LocalDateTime.now().toString()
         )
         _list.value = mutableList
     }

@@ -16,7 +16,7 @@ import listmakerapp.main.viewModels.ShareViewModel
 
 @Composable
 fun NavHostController(
-    shareViewModel: ShareViewModel = viewModel()
+    shareViewModel: ShareViewModel
 ) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "LOADING-SCREEN") {
@@ -29,10 +29,10 @@ fun NavHostController(
             if (!shareViewModel.loadingAppState.collectAsState().value) navController.navigate("HOME")
         }
         composable("HOME") {
-            Box(modifier = Modifier.padding(10.dp)) { HomeScreen(navController) }
+            Box(modifier = Modifier.padding(10.dp)) { HomeScreen(navController,shareViewModel) }
         }
         composable("EDIT-MODE") {
-            Box(modifier = Modifier.padding(10.dp)) { EditModeScreen(navController) }
+            Box(modifier = Modifier.padding(10.dp)) { EditModeScreen(navController,shareViewModel) }
         }
     }
 }

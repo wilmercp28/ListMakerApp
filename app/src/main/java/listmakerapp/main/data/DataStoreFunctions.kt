@@ -8,14 +8,14 @@ import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-val APP_DATA_STORE_KEY = stringPreferencesKey("list_name")
+val APP_DATA_STORE_KEY = stringPreferencesKey("APP-State")
 
 
 
-fun getAppData(dataStore: DataStore<Preferences>): Flow<AppData> {
+fun getAppData(dataStore: DataStore<Preferences>): Flow<AppData?> {
     return dataStore.data.map { preferences ->
         val appDataJson = preferences[APP_DATA_STORE_KEY] ?: "{}"
-        Gson().fromJson(appDataJson, AppData::class.java) ?: AppData(list =  emptyList(), selectedIndex = 0, isShoppingMode = false)
+        Gson().fromJson(appDataJson, AppData::class.java)
     }
 }
 
@@ -25,5 +25,7 @@ suspend fun saveAppData(appData: AppData, dataStore: DataStore<Preferences>) {
         preferences[APP_DATA_STORE_KEY] = appDataJson
     }
 }
+
+
 
 

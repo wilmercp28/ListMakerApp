@@ -58,7 +58,7 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun HomeScreen(
     navController: NavController,
-    shareViewModel: ShareViewModel = viewModel()
+    shareViewModel: ShareViewModel
 ) {
     val list by shareViewModel.listState.collectAsState()
     var selectedList by rememberSaveable { mutableStateOf<ListOfItems?>(null) }
@@ -102,23 +102,27 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             contentPadding = PaddingValues(5.dp),
             content = {
-                items(list.reversed(), key = { it.id }) { listItem ->
-                    Box(
-                        modifier = Modifier
-                            .animateItemPlacement()
-                    ) {
-                        ShowList(
-                            listItem,
-                            selectedList == listItem,
-                            onSelection = { selectedList = if (selectedList != listItem) listItem else null },
-                            onRemove = { shareViewModel.removeList(listItem) },
-                            onEditMode = {
-                                shareViewModel.changeSelectedIndex(list.indexOf(listItem))
-                                shareViewModel.changeEditMode()
-                                navController.navigate("EDIT-MODE")
-                            },
-                            onShoppingMode = {}
-                        )
+                if (!list.isNullOrEmpty()) {
+                    items(list.reversed(), key = { it.id }) { listItem ->
+                        Box(
+                            modifier = Modifier
+                                .animateItemPlacement()
+                        ) {
+                            ShowList(
+                                listItem,
+                                selectedList == listItem,
+                                onSelection = {
+                                    selectedList = if (selectedList != listItem) listItem else null
+                                },
+                                onRemove = { shareViewModel.removeList(listItem) },
+                                onEditMode = {
+                                    shareViewModel.changeSelectedIndex(list.indexOf(listItem))
+                                    shareViewModel.changeEditMode()
+                                    navController.navigate("EDIT-MODE")
+                                },
+                                onShoppingMode = {}
+                            )
+                        }
                     }
                 }
             }
@@ -173,11 +177,12 @@ fun ShowList(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                val creationDate = LocalDateTime.parse(
-                    listItem.dateOfCreation.toString(),
+                val creationDate = listItem.dateOfCreation
+                val parsedCreationDate = LocalDateTime.parse(
+                    creationDate,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
                 )
-                val duration = ChronoUnit.MINUTES.between(creationDate, LocalDateTime.now())
+                val duration = ChronoUnit.MINUTES.between(parsedCreationDate, LocalDateTime.now())
                 val durationText = when {
                     duration < 60 -> "${duration}m ago"
                     duration < 1440 -> "${duration / 60}h ago"

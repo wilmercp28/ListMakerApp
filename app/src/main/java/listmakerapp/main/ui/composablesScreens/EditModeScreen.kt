@@ -12,7 +12,7 @@ import listmakerapp.main.viewModels.ShareViewModel
 @Composable
 fun EditModeScreen(
     navController: NavHostController,
-    shareViewModel: ShareViewModel = viewModel()
+    shareViewModel: ShareViewModel
 ) {
 
     val list = shareViewModel.listState.collectAsState()
