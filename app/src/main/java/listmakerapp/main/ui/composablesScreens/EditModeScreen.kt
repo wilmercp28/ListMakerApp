@@ -1,8 +1,12 @@
 package listmakerapp.main.ui.composablesScreens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,17 +18,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,10 +46,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,10 +63,10 @@ fun EditModeScreen(
     navController: NavHostController,
     shareViewModel: ShareViewModel
 ) {
-    val index by shareViewModel.selectedIndex.collectAsState()
-    val list by shareViewModel.listState.collectAsState()
-    val typesOfUnits = shareViewModel.groceryUnits
+    val index = shareViewModel.selectedIndex.collectAsState().value
+    val list = shareViewModel.listState.collectAsState().value
     val selectedList = list[index]
+    val listOfGroseriesUnits = shareViewModel.groceryUnits
 
     Scaffold(
         modifier = Modifier
@@ -63,7 +74,8 @@ fun EditModeScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(5.dp),
                 title = {
                     TextField(
                         textField = selectedList.name,
@@ -83,75 +95,109 @@ fun EditModeScreen(
     ) { scaffoldPaddling ->
         LazyColumn(
             modifier = Modifier
-                .padding(scaffoldPaddling),
+                .padding(scaffoldPaddling)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
             content = {
-                item {
-                    Button(onClick = { shareViewModel.addItem() }) {
-                        Text(
-                            text = "Add Item",
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
                 items(selectedList.items, key = { it.id }) { item ->
                     Box(modifier = Modifier.animateItemPlacement()) {
                         ShowItem(
-                            item,
-                            typesOfUnits,
+                            item = item,
+                            listOfGroseriesUnits,
                             onChange = { changedItem ->
                                 shareViewModel.changeItem(
                                     item,
                                     changedItem
                                 )
+                            },
+                            onDelete = {
+                                shareViewModel.deleteItem(item)
                             })
+                    }
+                }
+                item {
+                    IconButton(
+                        onClick = { shareViewModel.addItem() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+                            .animateItemPlacement()
+                    ) {
+                        Text(text = "Add New Item")
                     }
                 }
             }
         )
+
+
     }
 }
 
-
 @Composable
-fun ShowItem(item: Item, typesOfUnits: List<String>, onChange: (Item) -> Unit) {
+fun ShowItem(
+    item: Item,
+    listOfGroceriesUnits: List<String>,
+    onChange: (Item) -> Unit,
+    onDelete: () -> Unit
+) {
     var expand by remember { mutableStateOf(false) }
-    var selectedUnit by remember { mutableStateOf(item.unit) }
+    var selectedUnitType by remember { mutableStateOf(item.unit) }
     var quantity = item.quantity
     var description = item.description
-    fun changeItem() {
-        onChange(item.copy(unit = selectedUnit, quantity = quantity, description = description))
+
+    fun change() {
+        onChange(item.copy(unit = selectedUnitType, quantity = quantity, description = description))
     }
-    Row(
+    Column(
         modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(20))
+            .padding(5.dp)
     ) {
-        IconButton(
-            onClick = { expand = !expand },
-            modifier = Modifier
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = selectedUnit)
-            DropdownMenu(expanded = expand, onDismissRequest = { expand = false; changeItem() }) {
-                typesOfUnits.forEach { unit ->
+            IconButton(
+                onClick = { expand = !expand },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = selectedUnitType)
+            }
+
+            DropdownMenu(
+                expanded = expand,
+                onDismissRequest = { expand = false }
+            ) {
+                listOfGroceriesUnits.forEach { unitType ->
                     DropdownMenuItem(
-                        text = { Text(text = unit) },
-                        onClick = { selectedUnit = unit; expand = false; changeItem() })
+                        text = { Text(text = unitType) },
+                        onClick = {
+                            selectedUnitType = unitType
+                            expand = false
+                            change()
+                        }
+                    )
                 }
+            }
+            TextField(
+                onChange = { quantity = it;change() },
+                label = "Quantity",
+                textField = quantity,
+                fillMaxWidthFloat = 0.7f
+            )
+            IconButton(onClick = { onDelete() }) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete Item",
+                    tint = Color.Red
+                )
             }
         }
         TextField(
-            onChange = { quantity = it; changeItem() },
-            fillMaxWidthFloat = 0.3f,
-            textField = item.quantity,
-            label = "Quantity"
-        )
-        TextField(
-            onChange = { description = it; changeItem() },
-            fillMaxWidthFloat = 1f,
-            textField = item.description,
-            label = "Description"
+            onChange = { description = it;change() },
+            label = "Description",
+            textField = description
         )
     }
 }

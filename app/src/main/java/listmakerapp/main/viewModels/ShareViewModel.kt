@@ -103,4 +103,13 @@ class ShareViewModel : ViewModel() {
         mutableList[_selectedIndex.value].items = mutableItem
         _list.value = mutableList
     }
+
+    fun deleteItem(item: Item) {
+        val mutableList = _list.value.toMutableList()
+        val mutableItem = _list.value[_selectedIndex.value].items.toMutableList()
+        val updatedItems = mutableItem.filterNot { it == item }
+        mutableList[_selectedIndex.value] = mutableList[_selectedIndex.value].copy(items = updatedItems)
+        _list.value = mutableList
+    }
+
 }
