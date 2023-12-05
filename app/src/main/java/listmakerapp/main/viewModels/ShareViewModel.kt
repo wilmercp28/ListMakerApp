@@ -102,6 +102,5 @@ class ShareViewModel : ViewModel() {
         mutableItem[indexOfItem] = changedItem
         mutableList[_selectedIndex.value].items = mutableItem
         _list.value = mutableList
-
     }
 }
