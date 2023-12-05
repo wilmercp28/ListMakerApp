@@ -23,7 +23,7 @@ fun NavHostController(
             enterTransition = { fadeIn() },
             exitTransition = { fadeOut() }
         ) {
-            LoadingScreen(navController,shareViewModel)
+            LoadingScreen(navController, shareViewModel)
         }
         composable("HOME") {
             Box(modifier = Modifier.padding(10.dp)) { HomeScreen(navController, shareViewModel) }
