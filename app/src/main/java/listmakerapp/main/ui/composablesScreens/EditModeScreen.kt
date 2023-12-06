@@ -1,44 +1,41 @@
 package listmakerapp.main.ui.composablesScreens
 
+import android.util.Log
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,12 +47,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import listmakerapp.main.data.Item
 import listmakerapp.main.viewModels.ShareViewModel
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -66,7 +64,8 @@ fun EditModeScreen(
     val index = shareViewModel.selectedIndex.collectAsState().value
     val list = shareViewModel.listState.collectAsState().value
     val selectedList = list[index]
-    val listOfGroseriesUnits = shareViewModel.groceryUnits
+    val listOfGroceriesUnits = shareViewModel.groceryUnits
+    val listOfCategories = shareViewModel.groceryCategories
 
     Scaffold(
         modifier = Modifier
@@ -103,12 +102,14 @@ fun EditModeScreen(
                     Box(modifier = Modifier.animateItemPlacement()) {
                         ShowItem(
                             item = item,
-                            listOfGroseriesUnits,
+                            listOfGroceriesUnits,
+                            listOfCategories,
                             onChange = { changedItem ->
                                 shareViewModel.changeItem(
                                     item,
                                     changedItem
                                 )
+                                Log.d("ChangeItem index", selectedList.items.indexOfFirst { it.id == item.id }.toString())
                             },
                             onDelete = {
                                 shareViewModel.deleteItem(item)
@@ -120,7 +121,7 @@ fun EditModeScreen(
                         onClick = { shareViewModel.addItem() },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+                            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(10))
                             .animateItemPlacement()
                     ) {
                         Text(text = "Add New Item")
@@ -137,44 +138,70 @@ fun EditModeScreen(
 fun ShowItem(
     item: Item,
     listOfGroceriesUnits: List<String>,
+    listOfCategories: List<String>,
     onChange: (Item) -> Unit,
     onDelete: () -> Unit
 ) {
-    var expand by remember { mutableStateOf(false) }
+    var expandUnitType by remember { mutableStateOf(false) }
+    var expandCategory by remember { mutableStateOf(false) }
     var selectedUnitType by remember { mutableStateOf(item.unit) }
+    var selectedCategory by remember { mutableStateOf(item.category) }
     var quantity = item.quantity
     var description = item.description
+    var price = item.price
 
     fun change() {
-        onChange(item.copy(unit = selectedUnitType, quantity = quantity, description = description))
+        onChange(
+            item.copy(
+                unit = selectedUnitType,
+                quantity = quantity,
+                description = description,
+                price = price,
+                category = selectedCategory
+            )
+        )
     }
     Column(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(20))
-            .padding(5.dp)
+            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(10))
+            .padding(10.dp)
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 8.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { onDelete() }) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete Item",
+                    tint = Color.Red
+                )
+            }
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = { expand = !expand },
-                modifier = Modifier.weight(1f)
+                onClick = { expandUnitType = !expandUnitType },
+                modifier = Modifier.weight(0.5f)
             ) {
                 Text(text = selectedUnitType)
             }
-
             DropdownMenu(
-                expanded = expand,
-                onDismissRequest = { expand = false }
+                expanded = expandUnitType,
+                onDismissRequest = { expandUnitType = false }
             ) {
-                listOfGroceriesUnits.forEach { unitType ->
+                listOfGroceriesUnits.sortedBy { it }.forEach { unitType ->
                     DropdownMenuItem(
                         text = { Text(text = unitType) },
                         onClick = {
                             selectedUnitType = unitType
-                            expand = false
+                            expandUnitType = false
                             change()
                         }
                     )
@@ -184,21 +211,51 @@ fun ShowItem(
                 onChange = { quantity = it;change() },
                 label = "Quantity",
                 textField = quantity,
-                fillMaxWidthFloat = 0.7f
+                fillMaxWidthFloat = 0.5f,
+                keyboardType = KeyboardType.Number
             )
-            IconButton(onClick = { onDelete() }) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Item",
-                    tint = Color.Red
-                )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = { expandCategory = !expandCategory },
+                modifier = Modifier.weight(0.5f)
+            ) {
+                Text(text = selectedCategory)
             }
+            DropdownMenu(
+                expanded = expandCategory,
+                onDismissRequest = { expandCategory = false }
+            ) {
+                listOfCategories.sortedBy { it }.forEach { category ->
+                    DropdownMenuItem(
+                        text = { Text(text = category) },
+                        onClick = {
+                            selectedCategory = category
+                            expandCategory = false
+                            change()
+                        }
+                    )
+                }
+            }
+            TextField(
+                onChange = { price = it;change() },
+                label = "Price",
+                textField = price,
+                fillMaxWidthFloat = 0.5f,
+                keyboardType = KeyboardType.Number
+            )
+
         }
         TextField(
             onChange = { description = it;change() },
             label = "Description",
             textField = description
         )
+        Spacer(modifier = Modifier.size(20.dp))
     }
 }
 
@@ -208,7 +265,8 @@ fun ShowItem(
 fun TextField(
     textField: String = "",
     label: String = "",
-    height: Dp = 60.dp,
+    charLimit: Int = 9999999,
+    keyboardType: KeyboardType = KeyboardType.Text,
     fillMaxWidthFloat: Float = 1f,
     textStyle: TextStyle = TextStyle(fontSize = 15.sp),
     onChange: (String) -> Unit
@@ -218,7 +276,9 @@ fun TextField(
     var text by remember { mutableStateOf(textField) }
     OutlinedTextField(
         value = text,
-        onValueChange = { text = it },
+        onValueChange = {
+            text = it.take(charLimit)
+        },
         modifier = Modifier
             .onFocusChanged {
                 if (!it.isFocused) {
@@ -226,16 +286,17 @@ fun TextField(
                     keyboardController?.hide()
                 }
             }
-            .height(height)
-            .fillMaxWidth(fillMaxWidthFloat),
-        shape = RoundedCornerShape(100),
+            .fillMaxWidth(fillMaxWidthFloat)
+            .animateContentSize(),
+        shape = RoundedCornerShape(10),
         label = { Text(text = label) },
-        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = keyboardType,
+            imeAction = ImeAction.Done
+        ),
         keyboardActions = KeyboardActions(onDone = {
             keyboardController?.hide()
         }),
         textStyle = textStyle
     )
-
-
 }

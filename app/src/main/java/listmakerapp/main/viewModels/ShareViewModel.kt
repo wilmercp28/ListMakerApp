@@ -32,6 +32,15 @@ class ShareViewModel : ViewModel() {
         "Gallons", "Quarts", "Pints", "Fluid Ounces",
         "Dozens", "Cans", "Jars", "Bottles"
     )
+    val groceryCategories = listOf(
+        "Cat", "Produce", "Dairy", "Bakery", "Meat", "Seafood",
+        "Frozen", "Canned", "Pasta", "Breakfast",
+        "Condiments", "Snacks", "Beverages", "Deli", "Baking",
+        "Canned/Jarred", "Household", "Personal Care", "Baby Care", "Pet Supplies", "Health", "International",
+        "Organic", "Gluten-Free", "Gourmet", "Bakery", "Herbs/Spices", "Desserts", "Ethnic", "Nuts/Seeds", "Grilling", "Chips", "Soup",
+        "Coffee", "Juices", "Paper", "Kitchenware", "Office", "Home Decor", "Party", "Condiments"
+    )
+
 
 
     //State Changing Functions
@@ -62,11 +71,7 @@ class ShareViewModel : ViewModel() {
     fun addNewList() {
         val mutableList = _list.value.toMutableList()
         Log.d("Newlist", mutableList.toString())
-        mutableList += ListOfItems(
-            name = "New List",
-            items = emptyList(),
-            dateOfCreation = LocalDateTime.now().toString()
-        )
+        mutableList += ListOfItems()
         _list.value = mutableList
     }
 
@@ -86,17 +91,13 @@ class ShareViewModel : ViewModel() {
     fun addItem() {
         val mutableList = _list.value.toMutableList()
         mutableList[_selectedIndex.value] = mutableList[_selectedIndex.value].copy(
-            items = mutableList[_selectedIndex.value].items + Item(
-                unit = "Pieces",
-                quantity = "",
-                description = ""
-            )
+            items = mutableList[_selectedIndex.value].items + Item()
         )
         _list.value = mutableList
     }
 
     fun changeItem(item: Item, changedItem: Item) {
-        val indexOfItem = _list.value[_selectedIndex.value].items.indexOf(item)
+        val indexOfItem = _list.value[_selectedIndex.value].items.indexOfFirst { it.id == item.id }
         val mutableList = _list.value.toMutableList()
         val mutableItem = _list.value[_selectedIndex.value].items.toMutableList()
         mutableItem[indexOfItem] = changedItem
@@ -105,10 +106,12 @@ class ShareViewModel : ViewModel() {
     }
 
     fun deleteItem(item: Item) {
+        val indexOfItem = _list.value[_selectedIndex.value].items.indexOfFirst { it.id == item.id }
         val mutableList = _list.value.toMutableList()
         val mutableItem = _list.value[_selectedIndex.value].items.toMutableList()
-        val updatedItems = mutableItem.filterNot { it == item }
-        mutableList[_selectedIndex.value] = mutableList[_selectedIndex.value].copy(items = updatedItems)
+        val updatedItems = mutableItem.filterIndexed { index, _ -> index != indexOfItem }
+        mutableList[_selectedIndex.value] =
+            mutableList[_selectedIndex.value].copy(items = updatedItems)
         _list.value = mutableList
     }
 
