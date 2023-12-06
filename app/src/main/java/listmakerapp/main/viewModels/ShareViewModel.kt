@@ -98,21 +98,35 @@ class ShareViewModel : ViewModel() {
 
     fun changeItem(item: Item, changedItem: Item) {
         val indexOfItem = _list.value[_selectedIndex.value].items.indexOfFirst { it.id == item.id }
-        val mutableList = _list.value.toMutableList()
-        val mutableItem = _list.value[_selectedIndex.value].items.toMutableList()
-        mutableItem[indexOfItem] = changedItem
-        mutableList[_selectedIndex.value].items = mutableItem
-        _list.value = mutableList
+
+        if (indexOfItem >= 0) {
+            val mutableList = _list.value.toMutableList()
+            val mutableItem = _list.value[_selectedIndex.value].items.toMutableList()
+            mutableItem[indexOfItem] = changedItem
+            mutableList[_selectedIndex.value].items = mutableItem
+            _list.value = mutableList
+        } else {
+            Log.e("ShareViewModel", "changeItem: Item not found in the list")
+        }
     }
 
+
     fun deleteItem(item: Item) {
-        val indexOfItem = _list.value[_selectedIndex.value].items.indexOfFirst { it.id == item.id }
-        val mutableList = _list.value.toMutableList()
-        val mutableItem = _list.value[_selectedIndex.value].items.toMutableList()
-        val updatedItems = mutableItem.filterIndexed { index, _ -> index != indexOfItem }
-        mutableList[_selectedIndex.value] =
-            mutableList[_selectedIndex.value].copy(items = updatedItems)
-        _list.value = mutableList
+        val selectedIndex = _selectedIndex.value
+        val currentList = _list.value
+        val currentItems = currentList[selectedIndex].items
+        val indexOfItem = currentItems.indexOfFirst { it.id == item.id }
+
+        val updatedItems = currentItems.filterIndexed { index, _ -> index != indexOfItem }
+
+        val updatedList = currentList.toMutableList()
+        updatedList[selectedIndex] = updatedList[selectedIndex].copy(items = updatedItems)
+
+        // Log information for debugging
+        Log.d("ShareViewModel", "Deleting item: $item, Original Index: $indexOfItem")
+
+        _list.value = updatedList
     }
+
 
 }
