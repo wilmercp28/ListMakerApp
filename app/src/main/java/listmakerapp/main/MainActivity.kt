@@ -39,7 +39,6 @@ class MainActivity : ComponentActivity() {
             if (appData != null) {
                 shareViewModel.loadStates(appData)
                 shareViewModel.changeLoadingState()
-                Log.d("Load on", appData.toString())
             }
         }
 
@@ -79,7 +78,6 @@ class MainActivity : ComponentActivity() {
             isShoppingMode = shareViewModel.isShoppingMode.value
         )
         saveAppData(appData, dataStoreClass)
-        Log.d("Data Saved", listState.toString())
         finish()
     }
 }

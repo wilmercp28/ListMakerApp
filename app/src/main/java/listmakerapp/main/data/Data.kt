@@ -14,7 +14,8 @@ data class ListOfItems(
     val id: String = UUID.randomUUID().toString(),
     var name: String = "New List",
     var items: List<Item> = emptyList(),
-    val dateOfCreation: String = LocalDateTime.now().toString()
+    val favorite: Boolean = false,
+    val dateOfLastModify: String = LocalDateTime.now().toString()
 )
 
 

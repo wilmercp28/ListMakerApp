@@ -15,7 +15,7 @@ import listmakerapp.main.viewModels.ShareViewModel
 @Composable
 fun LoadingScreen(navController: NavHostController, shareViewModel: ShareViewModel) {
     val loadingState = shareViewModel.loadingAppState.collectAsState()
-    if (loadingState.value) {
+    if (!loadingState.value) {
     navController.navigate("HOME")
     }
     Column(
