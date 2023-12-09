@@ -17,6 +17,8 @@ class ShareViewModel : ViewModel() {
     private val _isShoppingMode = MutableStateFlow(false)
     private val _loadingAppState = MutableStateFlow(true)
     private val _isEditMode = MutableStateFlow(false)
+    private val _groupingBy = MutableStateFlow("initial")
+    private var _sortingBy = MutableStateFlow("Last Modify")
 
 
     val listState: StateFlow<List<ListOfItems>> get() = _list
@@ -24,6 +26,8 @@ class ShareViewModel : ViewModel() {
     val isShoppingMode: StateFlow<Boolean> get() = _isShoppingMode
     val loadingAppState: StateFlow<Boolean> get() = _loadingAppState
     val editMode: StateFlow<Boolean> get() = _isEditMode
+    val groupingBy: StateFlow<String> get() = _groupingBy
+    val sortingBy: StateFlow<String> get() = _sortingBy
 
     val groceryUnits = listOf(
         "Pounds", "Ounces", "Grams", "Kilograms",
@@ -78,7 +82,10 @@ class ShareViewModel : ViewModel() {
     val listOfSorting = listOf(
         "Last Modify", "Name",
         "# of items",
-        "Favorite"
+    )
+    val listGrouping = listOf(
+        "Initial",
+        "Category"
     )
 
 
@@ -105,6 +112,17 @@ class ShareViewModel : ViewModel() {
         _selectedIndex.value = index
     }
 
+    fun changeSorting(
+        sorting: String
+    ){
+        _sortingBy.value = sorting
+    }
+    fun changeGrouping(
+        grouping: String
+    ){
+        _groupingBy.value = grouping
+    }
+
 
     //Change list
     fun addNewList() {
@@ -126,6 +144,13 @@ class ShareViewModel : ViewModel() {
             name = newName,
             dateOfLastModify = LocalDateTime.now().toString()
         )
+        _list.value = mutableList
+    }
+
+    fun changeFavoriteState(listItem: ListOfItems) {
+        val index = _list.value.indexOf(listItem)
+        val mutableList = _list.value.toMutableList()
+        mutableList[index] = mutableList[index].copy(favorite = !mutableList[index].favorite)
         _list.value = mutableList
     }
 
@@ -166,10 +191,10 @@ class ShareViewModel : ViewModel() {
         val updatedItems = currentItems.filterIndexed { index, _ -> index != indexOfItem }
 
         val updatedList = currentList.toMutableList()
-        updatedList[selectedIndex] = updatedList[selectedIndex].copy(items = updatedItems, dateOfLastModify = LocalDateTime.now().toString())
-
-        // Log information for debugging
-        Log.d("ShareViewModel", "Deleting item: $item, Original Index: $indexOfItem")
+        updatedList[selectedIndex] = updatedList[selectedIndex].copy(
+            items = updatedItems,
+            dateOfLastModify = LocalDateTime.now().toString()
+        )
 
         _list.value = updatedList
     }

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
@@ -46,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -69,7 +71,9 @@ fun HomeScreen(
     val coroutine = rememberCoroutineScope()
     var settingsMenuExpanded by remember { mutableStateOf(false) }
     val sortingList = shareViewModel.listOfSorting
-    var sortingBy by remember { mutableStateOf(sortingList[0]) }
+    val groupingList = shareViewModel.listGrouping
+    val sortingBy by shareViewModel.sortingBy.collectAsState()
+    val groupingBy by shareViewModel.groupingBy.collectAsState()
 
     val sortList = when (sortingBy) {
         "Last Modify" -> list.sortedBy { it.dateOfLastModify }
@@ -94,7 +98,7 @@ fun HomeScreen(
                             onDismiss = { settingsMenuExpanded = !settingsMenuExpanded },
                             sortingBy,
                             sortingList,
-                            onSortingChange = { sortingBy = it }
+                            onSortingChange = { shareViewModel.changeSorting(it) }
                         )
                     }
                 }
@@ -142,7 +146,8 @@ fun HomeScreen(
                                     shareViewModel.changeEditMode()
                                     navController.navigate("EDIT-MODE")
                                 },
-                                onShoppingMode = {}
+                                onShoppingMode = {},
+                                onChangeFavorite = { shareViewModel.changeFavoriteState(listItem) }
                             )
                         }
                     }
@@ -202,6 +207,7 @@ fun ShowList(
     onSelection: () -> Unit,
     onRemove: () -> Unit,
     onEditMode: () -> Unit,
+    onChangeFavorite: () -> Unit,
     onShoppingMode: () -> Unit
 ) {
     var showRemoveAlert by remember { mutableStateOf(false) }
@@ -227,11 +233,11 @@ fun ShowList(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = listItem.name,
-            fontSize = 30.sp,
-            color = MaterialTheme.colorScheme.onPrimary
-        )
+            Text(
+                text = listItem.name,
+                fontSize = 30.sp,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
         AnimatedVisibility(
             modifier = Modifier
                 .fillMaxSize(),
@@ -249,11 +255,11 @@ fun ShowList(
                 val duration = ChronoUnit.MINUTES.between(parsedCreationDate, LocalDateTime.now())
                 val durationText = when {
                     duration < 60 -> "Last modify ${duration}m ago"
-                    duration < 1440 -> "Last modify \$${duration / 60}h ago"
-                    duration < 10080 -> "Last modify \$${duration / 1440}d ago"
-                    duration < 43800 -> "Last modify \$${duration / 10080}w ago"
-                    duration < 525600 -> "Last modify \$${duration / 43800}mo ago"
-                    else -> "Last modify \$${duration / 525600}y ago"
+                    duration < 1440 -> "Last modify ${duration / 60}h ago"
+                    duration < 10080 -> "Last modify ${duration / 1440}d ago"
+                    duration < 43800 -> "Last modify ${duration / 10080}w ago"
+                    duration < 525600 -> "Last modify ${duration / 43800}mo ago"
+                    else -> "Last modify ${duration / 525600}y ago"
                 }
                 Text(
                     text = listItem.items.size.toString(),
@@ -288,7 +294,15 @@ fun ShowList(
                 IconButton(onClick = { onEditMode() }) {
                     Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit List")
                 }
-
+                IconButton(onClick = { onChangeFavorite() }) {
+                    Icon(
+                        modifier = Modifier
+                            .weight(1f),
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = "Set as favorite",
+                        tint = if (listItem.favorite) Color.Yellow else Color.Gray
+                    )
+                }
             }
         }
     }
