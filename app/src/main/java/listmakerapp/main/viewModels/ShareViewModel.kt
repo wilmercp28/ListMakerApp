@@ -17,7 +17,7 @@ class ShareViewModel : ViewModel() {
     private val _isShoppingMode = MutableStateFlow(false)
     private val _loadingAppState = MutableStateFlow(true)
     private val _isEditMode = MutableStateFlow(false)
-    private val _groupingBy = MutableStateFlow("initial")
+    private val _groupingBy = MutableStateFlow("Name")
     private var _sortingBy = MutableStateFlow("Last Modify")
 
 
@@ -80,11 +80,12 @@ class ShareViewModel : ViewModel() {
         "Condiments"
     )
     val listOfSorting = listOf(
-        "Last Modify", "Name",
+        "Last Modify",
         "# of items",
+        "Name"
     )
     val listGrouping = listOf(
-        "Initial",
+        "Name",
         "Category"
     )
 

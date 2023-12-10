@@ -47,7 +47,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -65,30 +66,31 @@ fun HomeScreen(
     navController: NavController,
     shareViewModel: ShareViewModel
 ) {
+    var searchForList by remember { mutableStateOf("") }
     val list by shareViewModel.listState.collectAsState()
     var selectedList by remember { mutableStateOf<ListOfItems?>(null) }
     val lazyColumnState = rememberLazyListState()
     val coroutine = rememberCoroutineScope()
     var settingsMenuExpanded by remember { mutableStateOf(false) }
     val sortingList = shareViewModel.listOfSorting
-    val groupingList = shareViewModel.listGrouping
     val sortingBy by shareViewModel.sortingBy.collectAsState()
-    val groupingBy by shareViewModel.groupingBy.collectAsState()
+
+    val filteredList = list.filter { it.name.contains(searchForList.trim(), ignoreCase = true) }
 
     val sortList = when (sortingBy) {
-        "Last Modify" -> list.sortedBy { it.dateOfLastModify }
-        "Name" -> list.sortedBy { it.name }
-        "# of items" -> list.sortedBy { it.items.size.toString() }
-        "Favorite" -> list.sortedBy { it.favorite }
-        else -> list.sortedBy { it.dateOfLastModify }
+        "Last Modify" -> filteredList.sortedBy { it.dateOfLastModify }
+        "Name" -> filteredList.sortedBy { it.name }
+        "# of items" -> filteredList.sortedBy { it.items.size.toString() }
+        else -> filteredList.sortedBy { it.dateOfLastModify }
     }
-
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    SearchListBar()
+                    SearchListBar(
+                        onSearch = { searchForList = it }
+                    )
                 },
                 actions = {
                     IconButton(onClick = { settingsMenuExpanded = !settingsMenuExpanded }) {
@@ -108,8 +110,8 @@ fun HomeScreen(
             FloatingActionButton(onClick = {
                 shareViewModel.addNewList()
                 coroutine.launch {
-                    if (list.isNotEmpty()) {
-                        lazyColumnState.scrollToItem(0)
+                    if (filteredList.isNotEmpty()) {
+                        lazyColumnState.scrollToItem(filteredList.lastIndex)
                     }
                 }
 
@@ -128,27 +130,47 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             contentPadding = PaddingValues(5.dp),
             content = {
-                if (list.isNotEmpty()) {
-                    items(sortList, key = { it.id }) { listItem ->
-                        Box(
-                            modifier = Modifier
-                                .animateItemPlacement()
-                        ) {
-                            ShowList(
-                                listItem,
-                                selectedList == listItem,
-                                onSelection = {
-                                    selectedList = if (selectedList != listItem) listItem else null
-                                },
-                                onRemove = { shareViewModel.removeList(listItem) },
-                                onEditMode = {
-                                    shareViewModel.changeSelectedIndex(list.indexOf(listItem))
-                                    shareViewModel.changeEditMode()
-                                    navController.navigate("EDIT-MODE")
-                                },
-                                onShoppingMode = {},
-                                onChangeFavorite = { shareViewModel.changeFavoriteState(listItem) }
+
+                val groupedSortedList = sortList.sortedBy { !it.favorite }.groupBy { it.favorite }
+
+                if (filteredList.isNotEmpty()) {
+
+                    groupedSortedList.forEach { (isFavorite, groupedList) ->
+                        stickyHeader {
+                            Text(
+                                text = if (isFavorite) "Favorites" else "",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                style = TextStyle(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
                             )
+                        }
+
+                        items(groupedList, key = { it.id }) { listItem ->
+                            Box(
+                                modifier = Modifier
+                                    .animateItemPlacement()
+                            ) {
+                                ShowList(
+                                    listItem,
+                                    selectedList == listItem,
+                                    onSelection = {
+                                        selectedList =
+                                            if (selectedList != listItem) listItem else null
+                                    },
+                                    onRemove = { shareViewModel.removeList(listItem) },
+                                    onEditMode = {
+                                        shareViewModel.changeSelectedIndex(filteredList.indexOf(listItem))
+                                        shareViewModel.changeEditMode()
+                                        navController.navigate("EDIT-MODE")
+                                    },
+                                    onShoppingMode = {},
+                                    onChangeFavorite = { shareViewModel.changeFavoriteState(listItem) }
+                                )
+                            }
                         }
                     }
                 }
@@ -233,11 +255,11 @@ fun ShowList(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-            Text(
-                text = listItem.name,
-                fontSize = 30.sp,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
+        Text(
+            text = listItem.name,
+            fontSize = 30.sp,
+            color = MaterialTheme.colorScheme.onPrimary
+        )
         AnimatedVisibility(
             modifier = Modifier
                 .fillMaxSize(),
@@ -312,19 +334,25 @@ fun ShowList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchListBar(
-
+    onSearch: (String) -> Unit
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth(0.8f),
         value = searchQuery,
-        onValueChange = { searchQuery = it },
+        onValueChange = {
+            searchQuery = it
+            onSearch(it)
+        },
         shape = RoundedCornerShape(100),
         trailingIcon = {
             if (searchQuery.isNotEmpty()) {
                 IconButton(
-                    onClick = { searchQuery = "" },
+                    onClick = {
+                        searchQuery = ""
+                        onSearch("")
+                              },
                     modifier = Modifier
                         .size(30.dp)
                 ) {
